@@ -1,11 +1,15 @@
+from datetime import date
+
 from django.shortcuts import render
 from django.http import Http404
+from django.db.models import Max, Min, Avg
 from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
 from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
+
 
 # Create your views here.
 class DistrictList(APIView):
@@ -117,6 +121,20 @@ class EmpList(APIView):
         return Response(serializer.data)
     
     def post(self, request):
+        today=date.today()
+        day_month_year_dept_desig=f'{today.day:02}'+f'{today.month:02}'+str(today.year)[2:]+f'{request.data["department"]:02}'+f'{request.data["designation"]:02}'
+        try:
+            maximum_id=EmpBasicInfo.objects.aggregate(Max('id'))['id__max']
+            maximum_id_info=EmpBasicInfo.objects.filter(id=maximum_id).values('emp_id','first_name','last_name','dob')
+            for x in maximum_id_info:
+                print(x['first_name'])
+            print(maximum_id_info)
+            #print(type(maximum_id_info))
+        except:
+            maximum_id=0   
+        emp_id=maximum_id+1
+        print(emp_id)
+        request.data["emp_id"]=day_month_year_dept_desig+str(emp_id)
         serializer=EmpBasicInfoSerialiser(data=request.data)
         if serializer.is_valid():
             serializer.save()

@@ -25,7 +25,7 @@ class DesignationAdmin(admin.ModelAdmin):
 
 class EmpBasicInfoAdmin(admin.ModelAdmin):
     list_display=[
-                    'id', 'first_name', 'last_name', 
+                    'id', 'emp_id','first_name', 'last_name', 
                     'dob_tag', 'image_tag', 'phone', 'email', 
                     'thana', 'district', 'joiningdate_tag', 
                     'department', 'designation', 'status'

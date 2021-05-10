@@ -33,6 +33,7 @@ class EmpBasicInfo(models.Model):
         ('Permanent','Permanent'),
         ('Trainee','Trainee'),
     )
+    emp_id=models.CharField(max_length=15, unique=True, blank=False, null=True)
     first_name=models.CharField(max_length=50)
     last_name=models.CharField(max_length=50, blank=True)
     dob=models.DateField()

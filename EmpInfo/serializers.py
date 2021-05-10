@@ -7,10 +7,11 @@ class DistrictSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 class ThanaSerializer(serializers.ModelSerializer):
-    district=DistrictSerializer()
+    #district=DistrictSerializer()
     class Meta:
         model=Thana
-        fields=['id','name', 'district']
+        fields='__all__'
+        #fields=['id','name', 'district']
        
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -37,7 +38,7 @@ class EmpBasicInfoDetailSerialiser(serializers.ModelSerializer):
     class Meta:
         model=EmpBasicInfo
         fields=[
-                    'id', 'first_name', 'last_name', 
+                    'id','emp_id','first_name', 'last_name', 
                     'dob', 'phone', 'email', 
                     'thana', 'district', 'joiningdate', 
                     'department', 'designation', 'status'
