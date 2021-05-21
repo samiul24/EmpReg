@@ -2,7 +2,8 @@ from datetime import date
 
 from django.shortcuts import render
 from django.http import Http404
-from django.db.models import Max, Min, Avg
+from django.db.models import Max, Min, Avg, F
+from django.db.models import Q
 from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
 from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer
 
@@ -116,7 +117,12 @@ class DesignationList(APIView):
 
 class EmpList(APIView):
     def get(self, request):
-        employee_list=EmpBasicInfo.objects.values('first_name','last_name','email',).order_by('-email','id')
+        employee_list=EmpBasicInfo.objects.filter(first_name__contains='Md').\
+            filter(~Q(last_name__contains='Islam')).values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+        print(type(employee_list))
+        print(employee_list.query)
+
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)
     
