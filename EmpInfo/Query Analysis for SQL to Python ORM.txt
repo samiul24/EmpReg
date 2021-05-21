@@ -37,3 +37,56 @@ Based On EmpBasicInfo Table Where 1st is Row SQL and 2nd is Python ORM
 7) employee_list=EmpBasicInfo.objects.filter(first_name__contains='Md').\
             filter(~Q(last_name__contains='Islam')).values('first_name', 'last_name', 'email').\
                 order_by('-email','id')
+7) employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__contains='Md') & ~Q(last_name__contains='Islam')).values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+
+>>> Where with Like or Not Like <<<
+8) SELECT  first_name, last_name, email from EmpInfo_empbasicinfo
+    where first_name like '%MD%' 
+    or last_name not like '%Islam%'
+    order by email DESC, id
+8) employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__contains='Md') | ~Q(last_name__contains='Islam')).values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+
+>>> Where and or like <<<
+9) SELECT  first_name, last_name, email from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+    order by email DESC, id
+9) employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__startswith='Md') & (Q(last_name__contains='Islam') | Q(last_name__contains='Alam'))).values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+
+>>> Where and or like greater than <<<
+10) SELECT  first_name, last_name, email from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob>'1992-02-18'
+    order by email DESC, id
+10) employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) & \
+                 Q(dob__gt='1992-02-18')).\
+                values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+
+>>> Where and or like greater than between <<<
+11) SELECT  first_name, last_name, email from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob BETWEEN '1992-02-18' and '1992-02-19'
+    order by email DESC, id
+11) employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) & \
+                 Q(dob__range=['1992-02-18','1992-02-19'])).\
+                values('first_name', 'last_name', 'email').\
+                order_by('-email','id')
+11) employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) ) \
+                    .filter(Q(dob__gte='1992-02-18')&Q(dob__lte='1992-02-19'))\
+                    .values('first_name', 'last_name', 'email').\
+                    order_by('-email','id')

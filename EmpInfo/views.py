@@ -117,9 +117,18 @@ class DesignationList(APIView):
 
 class EmpList(APIView):
     def get(self, request):
-        employee_list=EmpBasicInfo.objects.filter(first_name__contains='Md').\
-            filter(~Q(last_name__contains='Islam')).values('first_name', 'last_name', 'email').\
-                order_by('-email','id')
+        """employee_list=EmpBasicInfo.objects.\
+            filter(Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) & \
+                 Q(dob__range=['1992-02-18','1992-02-19'])).\
+                values('first_name', 'last_name', 'email').\
+                order_by('-email','id')"""
+        employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) ) \
+                    .filter(Q(dob__gte='1992-02-18')&Q(dob__lte='1992-02-19'))\
+                    .values('first_name', 'last_name', 'email').\
+                    order_by('-email','id')
         print(type(employee_list))
         print(employee_list.query)
 
