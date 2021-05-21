@@ -33,8 +33,8 @@ class EmpBasicInfo(models.Model):
         ('Permanent','Permanent'),
         ('Trainee','Trainee'),
     )
-    emp_id=models.CharField(max_length=15, unique=True, blank=False, null=True)
-    first_name=models.CharField(max_length=50)
+    emp_id=models.CharField(max_length=15, unique=True, blank=False, null=True, db_column='emp_id', db_index=True)
+    first_name=models.CharField(max_length=50, help_text="""<b>Employee First Name</b>""")
     last_name=models.CharField(max_length=50, blank=True)
     dob=models.DateField()
     image = models.ImageField(upload_to='emp_images', null=True)

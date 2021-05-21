@@ -27,7 +27,7 @@ class DesignationSerializer(serializers.ModelSerializer):
 class EmpBasicInfoSerialiser(serializers.ModelSerializer):
     class Meta:
         model=EmpBasicInfo
-        fields='__all__'
+        fields=['first_name','last_name','email',]
         #depth=2
 
 class EmpBasicInfoDetailSerialiser(serializers.ModelSerializer):

@@ -116,7 +116,7 @@ class DesignationList(APIView):
 
 class EmpList(APIView):
     def get(self, request):
-        employee_list=EmpBasicInfo.objects.all()
+        employee_list=EmpBasicInfo.objects.values('first_name','last_name','email',).order_by('-email','id')
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)
     

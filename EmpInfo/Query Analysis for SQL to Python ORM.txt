@@ -1,0 +1,16 @@
+Based On EmpBasicInfo Table Where 1st is Row SQL and 2nd is Python ORM
+===============================================
+1) SELECT * from EmpInfo_empbasicinfo order by id ASC
+1) employee_list=EmpBasicInfo.objects.all().order_by('id')
+==
+2) SELECT * from EmpInfo_empbasicinfo order by id DESC
+2) employee_list=EmpBasicInfo.objects.all().order_by('-id')
+==
+3) SELECT * from EmpInfo_empbasicinfo
+3) employee_list=EmpBasicInfo.objects.all()
+==
+4) SELECT first_name, last_name, email from EmpInfo_empbasicinfo
+4) employee_list=EmpBasicInfo.objects.values('first_name','last_name','email',)
+==
+5) SELECT id, first_name, last_name, email from EmpInfo_empbasicinfo order by email DESC, id
+5) employee_list=EmpBasicInfo.objects.values('first_name','last_name','email',).order_by('-email','id')
