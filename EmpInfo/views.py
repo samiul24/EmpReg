@@ -4,6 +4,10 @@ from django.shortcuts import render
 from django.http import Http404
 from django.db.models import Max, Min, Avg, F
 from django.db.models import Q
+from django.db.models.functions import Length
+from django.db.models import CharField, Count
+CharField.register_lookup(Length)
+
 from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
 from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer
 
@@ -117,20 +121,10 @@ class DesignationList(APIView):
 
 class EmpList(APIView):
     def get(self, request):
-        """employee_list=EmpBasicInfo.objects.\
-            filter(Q(first_name__startswith='Md') & \
-                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) & \
-                 Q(dob__range=['1992-02-18','1992-02-19'])).\
-                values('first_name', 'last_name', 'email').\
-                order_by('-email','id')"""
-        employee_list=EmpBasicInfo.objects.\
-            filter( Q(first_name__startswith='Md') & \
-                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) ) \
-                    .filter(Q(dob__gte='1992-02-18')&Q(dob__lte='1992-02-19'))\
-                    .values('first_name', 'last_name', 'email').\
-                    order_by('-email','id')
-        print(type(employee_list))
+        employee_list=EmpBasicInfo.objects \
+            .values('id','first_name', 'last_name', 'department__name','designation__name', 'district__name', 'thana__name', )
         print(employee_list.query)
+
 
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)

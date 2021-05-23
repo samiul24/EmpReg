@@ -90,3 +90,127 @@ Based On EmpBasicInfo Table Where 1st is Row SQL and 2nd is Python ORM
                     .filter(Q(dob__gte='1992-02-18')&Q(dob__lte='1992-02-19'))\
                     .values('first_name', 'last_name', 'email').\
                     order_by('-email','id')
+
+>>> Text Length Comparison of a Field <<<
+12) SELECT  first_name, last_name, email, emp_id from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob BETWEEN '1992-02-18' and '1992-02-19'
+	and length(emp_id)>4
+    order by email DESC, id
+
+    from django.db.models.functions import Length
+    from django.db.models import CharField
+    CharField.register_lookup(Length)
+12) employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) )\
+                    .filter( Q(dob__gte='1992-02-18') & Q(dob__lte='1992-02-19') )\
+                    .filter( Q(emp_id__length__gt=4) ) \
+                    .values('first_name', 'last_name', 'email').\
+                    order_by('-email','id')
+
+>>> Distinct & Count <<<
+13) SELECT  DISTINCT first_name, last_name, email, emp_id from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob BETWEEN '1992-02-18' and '1992-02-19'
+	and length(emp_id)>4
+    order by email DESC, id
+13) employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) )\
+                    .filter( Q(dob__gte='1992-02-18') & Q(dob__lte='1992-02-19') )\
+                    .filter( Q(emp_id__length__gt=4) ) \
+                    .values('first_name', 'last_name', 'email').distinct().\
+                    order_by('-email','id')
+    a=employee_list.count()
+
+>>> Count in annotate <<<
+14) SELECT  first_name, count(department_id) as department_id from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob BETWEEN '1992-02-18' and '1992-02-19'
+	and length(emp_id)>4
+	group by first_name
+	order by first_name
+14) employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) )\
+                    .filter( Q(dob__gte='1992-02-18') & Q(dob__lte='1992-02-19') )\
+                    .filter( Q(emp_id__length__gt=4) ) \
+                    .values('first_name') \
+                    .annotate(department_id=Count('department_id')) \
+                    .order_by('department_id')
+
+>>> Count in annotate and counted result in different column. So, need extra field in Serializer<<<
+References---> https://hakibenita.com/django-group-by-sql
+15) SELECT  first_name, count(department_id) as count_department_id from EmpInfo_empbasicinfo 
+    where first_name like 'Md%' 
+    and (last_name like '%Islam%' or last_name like '%Alam%')
+	and dob BETWEEN '1992-02-18' and '1992-02-19'
+	and length(emp_id)>4
+	group by first_name
+	order by first_name
+15) employee_list=EmpBasicInfo.objects.\
+            filter( Q(first_name__startswith='Md') & \
+                (Q(last_name__contains='Islam') | Q(last_name__contains='Alam')) )\
+                    .filter( Q(dob__gte='1992-02-18') & Q(dob__lte='1992-02-19') )\
+                    .filter( Q(emp_id__length__gt=4) ) \
+                    .values('first_name') \
+                    .annotate(count_department_id1o=Count('department_id')) \
+                    .order_by('count_department_id1o')
+
+    #Serializer Code for adding new fields
+    class EmpBasicInfoSerialiser(serializers.ModelSerializer):
+    count_department_id = serializers.SerializerMethodField('get_count_department_id')
+
+    def get_count_department_id(self,employee_list):
+        print(employee_list)
+        count_department_id=employee_list["count_department_id"]
+        return count_department_id
+        
+    class Meta:
+        model=EmpBasicInfo
+        fields=['first_name', 'count_department_id',]
+
+>>> Relation Between Multi Table <<<
+16) select E.emp_id, E.first_name, D.Name as department, Di.name as designation, T.name as thana
+    from EmpInfo_empbasicinfo as E, EmpInfo_department as D, EmpInfo_district as Di, EmpInfo_thana as T
+    where E.department_id=D.id
+    and E.district_id=Di.id
+    and E.thana_id=T.id
+16) employee_list=EmpBasicInfo.objects \
+            .values('id','first_name', 'last_name', 'department__name','designation__name', 'district__name', 'thana__name', )
+   
+    #Serializer Code for adding new fields
+    class EmpBasicInfoSerialiser(serializers.ModelSerializer):    
+    department_name = serializers.SerializerMethodField('get_department_name')
+    designation_name = serializers.SerializerMethodField('get_designation_name')
+    district_name = serializers.SerializerMethodField('get_district_name')
+    thana_name = serializers.SerializerMethodField('get_thana_name')
+
+    def get_department_name(self,employee_list):
+        print(employee_list)
+        department_name=employee_list["department__name"]
+        return department_name
+
+    def get_designation_name(self,employee_list):
+        print(employee_list)
+        designation_name=employee_list["designation__name"]
+        return designation_name
+
+    def get_district_name(self,employee_list):
+        print(employee_list)
+        district_name=employee_list["district__name"]
+        return district_name
+    
+    def get_thana_name(self,employee_list):
+        print(employee_list)
+        thana_name=employee_list["thana__name"]
+        return thana_name
+
+    class Meta:
+        model=EmpBasicInfo
+        fields=[ 'id','first_name', 'last_name', 'department_name','designation_name', 'district_name', 'thana_name', ]
+        #depth=2
