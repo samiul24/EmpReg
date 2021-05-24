@@ -214,3 +214,70 @@ References---> https://hakibenita.com/django-group-by-sql
         model=EmpBasicInfo
         fields=[ 'id','first_name', 'last_name', 'department_name','designation_name', 'district_name', 'thana_name', ]
         #depth=2
+
+>>> Having in SQL <<<
+17) select first_name, count(id)
+    from EmpInfo_empbasicinfo 
+    group by first_name
+    HAVING count(id)=1
+17) employee_list=EmpBasicInfo.objects \
+            .values('first_name',) \
+            .annotate(id=Count('emp_id')) \
+            .filter(id=1)
+
+>>> SQL In in Django <<<
+18) emp=EmpBasicInfo.objects.filter(first_name__in=['Md','Samiul']) \
+            .values('first_name', 'last_name')
+18) emp=EmpBasicInfo.objects.filter(Q(first_name__in=['Md','Samiul']) & Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+
+>>> Unoin, Intersection, Minus/Difference <<<
+19) emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.difference(emp1)
+        print(emp2)
+        print(emp2.query)
+19) emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.union(emp1)
+        print(emp2)
+        print(emp2.query)
+19) emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.intersection(emp1)
+        print(emp2)
+        print(emp2.query)
+
+>>> Date, Month, Year, Substring, Lpad <<<
+20) def post(self, request):
+        today=date.today()
+        day_month_year_dept_desig=f'{today.day:02}'+f'{today.month:02}'+str(today.year)[2:]+f'{request.data["department"]:02}'+f'{request.data["designation"]:02}'
+        try:
+            maximum_id=EmpBasicInfo.objects.aggregate(Max('id'))['id__max']
+            maximum_id_info=EmpBasicInfo.objects.filter(id=maximum_id).values('emp_id','first_name','last_name','dob')
+            for x in maximum_id_info:
+                print(x['first_name'])
+            print(maximum_id_info)
+            #print(type(maximum_id_info))
+        except:
+            maximum_id=0   
+        emp_id=maximum_id+1
+        print(emp_id)
+        request.data["emp_id"]=day_month_year_dept_desig+str(emp_id)
+        serializer=EmpBasicInfoSerialiser(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+>>> Update using sub query and OuterRef <<<
+21) update EmpInfo_empsalary set basicsalary=(basicsalary+((basicsalary*20)/100))
+    where employee_id in (select id from EmpInfo_empbasicinfo where department_id=1 and designation_id=2)
+21) EmpSalary.objects.update(basicsalary=Subquery(EmpBasicInfo.objects.filter(Q(id=OuterRef('employee_id')) & Q(department=1) ) \
+            .annotate(basicsalary=F('empsalary__basicsalary')+(F('empsalary__basicsalary')*20/100)).values('basicsalary')[:1]))
+21) EmpSalary.objects.update(basicsalary=Subquery(EmpBasicInfo.objects.filter( Q(department=1) ) \
+            .annotate(basicsalary=F('empsalary__basicsalary')+(F('empsalary__basicsalary')*20/100)).values('basicsalary')[:1]))
+21) EmpSalary.objects.update(basicsalary=F('basicsalary')+(F('basicsalary')*20/100))

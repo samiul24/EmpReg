@@ -2,7 +2,7 @@ from datetime import date
 
 from django.shortcuts import render
 from django.http import Http404
-from django.db.models import Max, Min, Avg, F
+from django.db.models import Max, Min, Avg, F, OuterRef, Subquery
 from django.db.models import Q
 from django.db.models.functions import Length
 from django.db.models import CharField, Count
@@ -122,10 +122,22 @@ class DesignationList(APIView):
 class EmpList(APIView):
     def get(self, request):
         employee_list=EmpBasicInfo.objects \
-            .values('id','first_name', 'last_name', 'department__name','designation__name', 'district__name', 'thana__name', )
-        print(employee_list.query)
+            .values('first_name',) \
+            .annotate(id=Count('emp_id')) \
+            .filter(id=1)
+        
+        emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.intersection(emp1)
+        print(emp2)
+        print(emp2.query)
 
-
+        up=EmpSalary.objects.update(basicsalary=Subquery(EmpBasicInfo.objects.filter(Q(id=OuterRef('employee_id')) & Q(department=1) ) \
+            .annotate(basicsalary=F('empsalary__basicsalary')+(F('empsalary__basicsalary')*20/100)).values('basicsalary')[:1]))
+            
+        print(up)
+        
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)
     
