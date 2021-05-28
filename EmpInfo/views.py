@@ -129,14 +129,20 @@ class EmpList(APIView):
         emp=EmpBasicInfo.objects.values('first_name', 'last_name')
         emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
             .values('first_name', 'last_name')
-        emp2=emp.intersection(emp1)
-        print(emp2)
-        print(emp2.query)
+        emp2=emp.union(emp1)
+        # print(emp2)
+        # print(emp2.query)
 
-        up=EmpSalary.objects.update(basicsalary=Subquery(EmpBasicInfo.objects.filter(Q(id=OuterRef('employee_id')) & Q(department=1) ) \
-            .annotate(basicsalary=F('empsalary__basicsalary')+(F('empsalary__basicsalary')*20/100)).values('basicsalary')[:1]))
-            
-        print(up)
+        v_basic_salary=0
+        emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
+            .filter(empsalary__basicsalary__gt=v_basic_salary)
+        print(emp3)
+        print(emp3.query)
+
+        #dis_thana_count=Thana.objects.values('district_id','district__name').annotate(thana_count=Count('district'))
+        #dis_thana_count=District.objects.annotate(num_thanas=Count('thana'))
+        #print(dis_thana_count)
+        #print(dis_thana_count.query)
         
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)

@@ -1,5 +1,15 @@
 Based On EmpBasicInfo Table Where 1st is Row SQL and 2nd is Python ORM
 ======================================================================
+Sources:
+========
+https://docs.djangoproject.com/en/3.2/ref/models/database-functions/
+https://docs.djangoproject.com/en/3.2/ref/models/querysets/
+https://docs.djangoproject.com/en/3.2/topics/db/queries/
+https://docs.djangoproject.com/en/3.2/ref/models/
+https://docs.djangoproject.com/en/3.2/ref/models/expressions/
+
+
+
 >>> Assending <<<
 1) SELECT * from EmpInfo_empbasicinfo order by id ASC
 1) employee_list=EmpBasicInfo.objects.all().order_by('id')
@@ -281,3 +291,70 @@ References---> https://hakibenita.com/django-group-by-sql
 21) EmpSalary.objects.update(basicsalary=Subquery(EmpBasicInfo.objects.filter( Q(department=1) ) \
             .annotate(basicsalary=F('empsalary__basicsalary')+(F('empsalary__basicsalary')*20/100)).values('basicsalary')[:1]))
 21) EmpSalary.objects.update(basicsalary=F('basicsalary')+(F('basicsalary')*20/100))
+
+>>> Type Conversion <<<
+22) https://docs.djangoproject.com/en/3.2/ref/models/database-functions/#cast
+
+>>> select_related <<<
+23) https://docs.djangoproject.com/en/3.2/ref/models/querysets/#select-related
+
+>>> Union/Intersection <<<
+24) emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.union(emp1)
+24) emp=EmpBasicInfo.objects.values('first_name', 'last_name')
+        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
+            .values('first_name', 'last_name')
+        emp2=emp.intersection(emp1)
+
+>>> Count <<<
+References---> https://docs.djangoproject.com/en/3.2/topics/db/aggregation/
+               https://docs.djangoproject.com/en/3.2/topics/db/aggregation/#joins-and-aggregates
+25) select ed.name as District, count(et.district_id) as No_of_Thana
+    from EmpInfo_district as ed, EmpInfo_thana as et 
+    where ed.id=et.district_id
+    group by ed.name
+25) dis_thana_count=Thana.objects.values('district_id','district__name').annotate(thana_count=Count('district'))
+        print(dis_thana_count)
+        print(dis_thana_count.query)
+
+>>> Left Outer Join <<<
+26) SELECT "EmpInfo_empbasicinfo"."first_name", "EmpInfo_empbasicinfo"."last_name", "EmpInfo_empsalary"."basicsalary", "EmpInfo_empeducation"."degree"
+   FROM "EmpInfo_empbasicinfo" LEFT OUTER JOIN "EmpInfo_empsalary" 
+   ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empsalary"."employee_id") 
+   LEFT OUTER JOIN "EmpInfo_empeducation" 
+   ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empeducation"."employee_id")
+26) select *
+    from EmpInfo_empbasicinfo as eb LEFT join  EmpInfo_empsalary as es on (eb.id=es.employee_id)
+    LEFT OUTER JOIN EmpInfo_empeducation as ee 
+    ON (eb.id = ee.employee_id)
+26) emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree')
+
+>>> Left Outer Join + Where <<<
+27) select *
+    rom EmpInfo_empbasicinfo as eb LEFT join  EmpInfo_empsalary as es on (eb.id=es.employee_id)
+    LEFT OUTER JOIN EmpInfo_empeducation as ee 
+    ON (eb.id = ee.employee_id)
+    where es.basicsalary>0
+27) emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
+        .filter(empsalary__basicsalary__gt=0)
+
+>>> Inner Join + Left Outer Join + Where <<<
+28) SELECT "EmpInfo_empbasicinfo"."first_name", "EmpInfo_empbasicinfo"."last_name", "EmpInfo_empsalary"."basicsalary", "EmpInfo_empeducation"."degree" FROM "EmpInfo_empbasicinfo" 
+    INNER JOIN "EmpInfo_empsalary" ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empsalary"."employee_id") 
+    LEFT OUTER JOIN "EmpInfo_empeducation" ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empeducation"."employee_id") 
+    WHERE "EmpInfo_empsalary"."basicsalary" > 0.0
+28) emp3=EmpBasicInfo.objects.filter(empsalary__basicsalary__gt=0)\
+        .values('first_name','last_name','empsalary__basicsalary','empeducation__degree')
+
+28) SELECT "EmpInfo_empbasicinfo"."first_name", "EmpInfo_empbasicinfo"."last_name", "EmpInfo_empsalary"."basicsalary", "EmpInfo_empeducation"."degree" FROM "EmpInfo_empbasicinfo" 
+    LEFT OUTER JOIN "EmpInfo_empsalary" ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empsalary"."employee_id") 
+    LEFT OUTER JOIN "EmpInfo_empeducation" ON ("EmpInfo_empbasicinfo"."id" = "EmpInfo_empeducation"."employee_id") 
+    INNER JOIN "EmpInfo_empsalary" T4 ON ("EmpInfo_empbasicinfo"."id" = T4."employee_id") WHERE T4."basicsalary" > 0.0
+28) emp3=EmpBasicInfo.objects \
+        .values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
+        .filter(empsalary__basicsalary__gt=0)
+28) v_basic_salary=0
+        emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
+            .filter(empsalary__basicsalary__gt=v_basic_salary)
