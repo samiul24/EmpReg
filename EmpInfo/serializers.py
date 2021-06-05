@@ -1,5 +1,5 @@
 from django.db.models.aggregates import Count
-from rest_framework import serializers
+from rest_framework import fields, serializers
 from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
 
 class DistrictSerializer(serializers.ModelSerializer):
@@ -13,6 +13,14 @@ class ThanaSerializer(serializers.ModelSerializer):
         model=Thana
         fields='__all__'
         #fields=['id','name', 'district']
+
+    """def to_representation(self, instance):
+        print(self)
+        print(instance)
+        test=super().to_representation(instance)
+        print(test['district'])
+        print(type(test))
+        return super().to_representation(instance)"""
        
 
 class DepartmentSerializer(serializers.ModelSerializer):
@@ -25,11 +33,20 @@ class DesignationSerializer(serializers.ModelSerializer):
         model=Designation
         fields='__all__'
     
-class EmpBasicInfoSerialiser(serializers.ModelSerializer):    
+"""class EmpBasicInfoSerialiser(serializers.ModelSerializer):
+    district=DistrictSerializer()
+    thana=ThanaSerializer()
+    department=DepartmentSerializer()
+    designation=DesignationSerializer()
     class Meta:
         model=EmpBasicInfo
-        fields=[ 'id','first_name', ]
-        #depth=2
+        fields=[ 'id','first_name', 'last_name', 'department','designation', 'district', 'thana', ]"""
+
+class EmpBasicInfoSerialiser(serializers.ModelSerializer):
+    class Meta:
+        model=EmpBasicInfo
+        fields='__all__'
+        
 
 class EmpBasicInfoDetailSerialiser(serializers.ModelSerializer):
     district=DistrictSerializer()
@@ -55,6 +72,22 @@ class EmpEducationSerializer(serializers.ModelSerializer):
     class Meta:
         model=EmpEducation
         fields='__all__'
+
+
+class EmpBasicInfoSalaryEducationSerialiser(serializers.ModelSerializer):
+    #salary=EmpSalarySerializer()
+    class Meta:
+        model=EmpBasicInfo
+        #fields="__all__"
+        fields=[
+                    'id','emp_id','first_name', 'last_name', 
+                    'dob', 'phone', 'email', 
+                    'thana', 'district', 'joiningdate', 
+                    'department', 'designation', 'status',
+        ]
+
+
+
 
 
 

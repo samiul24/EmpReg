@@ -358,3 +358,19 @@ References---> https://docs.djangoproject.com/en/3.2/topics/db/aggregation/
 28) v_basic_salary=0
         emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
             .filter(empsalary__basicsalary__gt=v_basic_salary)
+
+>>> Select_Related() <<<
+29) v_basic_salary=0
+        v_degree='Bachelor'
+        emp3=EmpBasicInfo.objects.values('first_name','last_name','district__name','empsalary__basicsalary','empeducation__degree') \
+            .filter(empsalary__basicsalary__gt=v_basic_salary).filter(empeducation__degree=v_degree)
+        print(emp3)
+        print(emp3.query)
+        
+>>> Variable Use in Query <<<
+30) v_basic_salary=0
+        v_degree='Bachelor'
+        emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
+            .filter(empsalary__basicsalary__gt=v_basic_salary).filter(empeducation__degree=v_degree)
+        print(emp3)
+        print(emp3.query)

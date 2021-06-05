@@ -1,4 +1,5 @@
 from datetime import date
+import time
 
 from django.shortcuts import render
 from django.http import Http404
@@ -9,10 +10,13 @@ from django.db.models import CharField, Count
 CharField.register_lookup(Length)
 
 from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
-from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer
+from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, \
+                        EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer, \
+                        EmpBasicInfoSalaryEducationSerialiser
 
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework import serializers, viewsets
 from rest_framework import status
 
 
@@ -58,6 +62,7 @@ class Districts(APIView):
 class ThanaList(APIView):
     def get(self, request):
         thana_list=Thana.objects.all()
+        #print(type(thana_list))
         serializer=ThanaSerializer(thana_list, many=True)
         return Response(serializer.data)
     
@@ -115,34 +120,39 @@ class DesignationList(APIView):
     def post(self, request):
         serializer=DesignationSerializer(data=request.data)
         if serializer.is_valid():
+            print(serializer.validated_data) #Order Dictionary 
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class Designations(APIView):
+    def get_object(self, pk):
+        try:
+            return Designation.objects.get(pk=pk)
+        except Designation.DoesNotExist:
+            raise Http404
+
+    def get(self, request, pk):
+        #designation=Designation.objects.get(pk=pk)
+        designation=self.get_object(pk)
+        serializer=DesignationSerializer(designation)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        designation=Designation.objects.get(pk=pk)
+        #designation=self.get_object(pk)
+        serializer=DesignationSerializer(designation, request.data)
+        if serializer.is_valid():
+            print(serializer.validated_data)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class EmpList(APIView):
     def get(self, request):
-        employee_list=EmpBasicInfo.objects \
-            .values('first_name',) \
-            .annotate(id=Count('emp_id')) \
-            .filter(id=1)
-        
-        emp=EmpBasicInfo.objects.values('first_name', 'last_name')
-        emp1=EmpBasicInfo.objects.filter(Q(last_name__contains='Islam')) \
-            .values('first_name', 'last_name')
-        emp2=emp.union(emp1)
-        # print(emp2)
-        # print(emp2.query)
-
-        v_basic_salary=0
-        emp3=EmpBasicInfo.objects.values('first_name','last_name','empsalary__basicsalary','empeducation__degree') \
-            .filter(empsalary__basicsalary__gt=v_basic_salary)
-        print(emp3)
-        print(emp3.query)
-
-        #dis_thana_count=Thana.objects.values('district_id','district__name').annotate(thana_count=Count('district'))
-        #dis_thana_count=District.objects.annotate(num_thanas=Count('thana'))
-        #print(dis_thana_count)
-        #print(dis_thana_count.query)
+        print(type(request.data))
+        print(request.data)
+        employee_list=EmpBasicInfo.objects.all()
         
         serializer=EmpBasicInfoSerialiser(employee_list, many=True)
         return Response(serializer.data)
@@ -158,11 +168,13 @@ class EmpList(APIView):
             print(maximum_id_info)
             #print(type(maximum_id_info))
         except:
-            maximum_id=0   
+            maximum_id=0
         emp_id=maximum_id+1
         print(emp_id)
         request.data["emp_id"]=day_month_year_dept_desig+str(emp_id)
+
         serializer=EmpBasicInfoSerialiser(data=request.data)
+        print(type(serializer))
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -197,3 +209,41 @@ class EmpEducationList(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+class EmpBasicInfoSalaryEducation(APIView):
+    def get(self, request):
+        employee_list=EmpBasicInfo.objects.all()
+        
+        serializer=EmpBasicInfoSalaryEducationSerialiser(employee_list, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        salary=request.data.get("salary")
+        print(salary)
+        today=date.today()
+        day_month_year_dept_desig=f'{today.day:02}'+f'{today.month:02}'+str(today.year)[2:]+f'{request.data["department"]:02}'+f'{request.data["designation"]:02}'
+        try:
+            maximum_id=EmpBasicInfo.objects.aggregate(Max('id'))['id__max']
+        except:
+            maximum_id=0
+        emp_id=maximum_id+1
+        request.data["emp_id"]=day_month_year_dept_desig+str(emp_id)
+        
+        try:
+            serializer=EmpBasicInfoSalaryEducationSerialiser(data=request.data)
+            if serializer.is_valid():
+                emp_id=serializer.save()
+                print(emp_id)
+
+            salary.update({"employee":int(emp_id.id)})
+            print(salary)
+            salaryserializer=EmpSalarySerializer(data=salary)
+            if salaryserializer.is_valid():
+                emp_salary=salaryserializer.save()
+                print(emp_salary)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
