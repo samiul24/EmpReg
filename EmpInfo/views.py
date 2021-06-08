@@ -218,10 +218,20 @@ class EmpBasicInfoSalaryEducation(APIView):
         return Response(serializer.data)
     
     def post(self, request):
+        phone=request.data["phone"]
+        print(phone)
+        if len(phone) != 11:
+            context={
+                "error":"True",
+                "message":"Invalid Ph No",
+            }
+            return Response (context)
         salary=request.data.get("salary")
-        print(salary)
+        education=request.data["education"]
+        
         today=date.today()
         day_month_year_dept_desig=f'{today.day:02}'+f'{today.month:02}'+str(today.year)[2:]+f'{request.data["department"]:02}'+f'{request.data["designation"]:02}'
+        day_month_year_dept_desig=f'{today.day:02}{today.month:02}{(today.year)[2:]}{request.data["department"]:02}{request.data["designation"]:02}'
         try:
             maximum_id=EmpBasicInfo.objects.aggregate(Max('id'))['id__max']
         except:
@@ -233,14 +243,19 @@ class EmpBasicInfoSalaryEducation(APIView):
             serializer=EmpBasicInfoSalaryEducationSerialiser(data=request.data)
             if serializer.is_valid():
                 emp_id=serializer.save()
-                print(emp_id)
 
             salary.update({"employee":int(emp_id.id)})
-            print(salary)
             salaryserializer=EmpSalarySerializer(data=salary)
             if salaryserializer.is_valid():
                 emp_salary=salaryserializer.save()
-                print(emp_salary)
+            
+            if bool(education):
+                for emp_education in education:
+                    emp_education.update({"employee":emp_id.id})
+                    education_serializer=EmpEducationSerializer(data=emp_education)
+                    if education_serializer.is_valid():
+                        education_serializer.save()         
+
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

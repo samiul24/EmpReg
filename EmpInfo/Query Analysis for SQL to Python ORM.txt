@@ -374,3 +374,109 @@ References---> https://docs.djangoproject.com/en/3.2/topics/db/aggregation/
             .filter(empsalary__basicsalary__gt=v_basic_salary).filter(empeducation__degree=v_degree)
         print(emp3)
         print(emp3.query)
+
+>>> Kono model er upore jodi serializer banano hoy, taile serializer.save(), model ja function ta return kore, 
+    oi value serializer.save() return kore. <<<
+
+>>> request.data theke kono data pop korle, request.data theke pop kora data ta cut hoye jay. But get korle copy hoy. <<<
+
+>>> Multi Table Data Insert <<<
+{
+   "first_name":"Md Rana",
+   "last_name":"Alam",
+   "dob":"1992-02-19",
+   "phone":"01758466444",
+   "email":"samiul1366@gmail.com",
+   "thana":4,
+   "district":4,
+   "joiningdate":"2021-05-08",
+   "department":2,
+   "designation":2,
+   "status":"Permanent",
+   "salary":{
+      "basicsalary":45000,
+      "medical":10000,
+      "houserent":15000,
+      "others":5000
+   },
+   "education":[
+      {
+         "degree":"SSC",
+         "passingyear":"2007",
+         "institute":"KAM High School",
+         "result":5
+      },
+      {
+         "degree":"HSC",
+         "passingyear":"2009",
+         "institute":"Govt. Akbar Ali College",
+         "result":4.50
+      },
+      {
+         "degree":"Bachelor",
+         "passingyear":"2014",
+         "institute":"PUST",
+         "result":3.32
+      }
+   ]
+}
+
+class EmpBasicInfoSalaryEducation(APIView):
+    def get(self, request):
+        employee_list=EmpBasicInfo.objects.all()
+        
+        serializer=EmpBasicInfoSalaryEducationSerialiser(employee_list, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        # print(request.data)
+        # mydata=request.data
+        # mydata=mydata["education"]
+        # print(mydata)
+        #salary=request.data.pop("salary")
+        salary=request.data.get("salary")
+        # print(salary)
+        #education=request.data.pop("education")
+        #education=request.data.get("education")
+        education=request.data["education"]
+        print(education)
+        
+        today=date.today()
+        day_month_year_dept_desig=f'{today.day:02}'+f'{today.month:02}'+str(today.year)[2:]+f'{request.data["department"]:02}'+f'{request.data["designation"]:02}'
+        try:
+            maximum_id=EmpBasicInfo.objects.aggregate(Max('id'))['id__max']
+        except:
+            maximum_id=0
+        emp_id=maximum_id+1
+        request.data["emp_id"]=day_month_year_dept_desig+str(emp_id)
+        
+        try:
+            serializer=EmpBasicInfoSalaryEducationSerialiser(data=request.data)
+            #print(serializer)
+            #print(type(serializer))
+            if serializer.is_valid():
+                emp_id=serializer.save()
+                #print(emp_id.id)
+
+            salary.update({"employee":int(emp_id.id)})
+            #print(salary)
+            salaryserializer=EmpSalarySerializer(data=salary)
+            if salaryserializer.is_valid():
+                emp_salary=salaryserializer.save()
+                #print(emp_salary)
+
+            #checkin this dictionary is null or not
+            if bool(education):
+                for emp_education in education:
+                    emp_education.update({"employee":emp_id.id})
+                    #print(type(emp_education))
+                    #print(emp_education)
+                    educationserializer=EmpEducationSerializer(data=emp_education)
+                    #print(educationserializer)
+                    #print(educationserializer.is_valid())
+                    if educationserializer.is_valid():
+                        educationserializer.save()         
+
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
