@@ -480,3 +480,14 @@ class EmpBasicInfoSalaryEducation(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         except Exception:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+============
+1. basic convention of variable naming, function, class
+2. dictionary, list , nested dict 
+3. function , python date , time
+4. OS Module , folder directory access
+5. basic threading
+6. django-postgress connection
+7. Function args,kargs
+8. websocket
+9. Loop,  while, for advance loop
