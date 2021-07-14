@@ -491,3 +491,8 @@ class EmpBasicInfoSalaryEducation(APIView):
 7. Function args,kargs
 8. websocket
 9. Loop,  while, for advance loop
+10. Asysnc
+11. Parallel Processing
+12. threading
+13. Lamda function
+14. List expression 
