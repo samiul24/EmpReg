@@ -43,6 +43,30 @@ class Districts(APIView):
 
     def get(self, request, pk):
         district=self.get_object(pk)
+
+        #Example of related_name
+        """d = District.objects.get(id=4)
+        print(d)
+        print(type(d))
+        #e = d.district.all()
+        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE "EmpInfo_thana"."district_id" = 1
+        #e = d.district.filter(id=3)
+        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_thana"."id" = 3)
+        #e = d.district.filter(id=3, district__name='Dhaka')
+        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" INNER JOIN "EmpInfo_district" ON ("EmpInfo_thana"."district_id" = "EmpInfo_district"."id") WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_district"."name" = Dhaka AND "EmpInfo_thana"."id" = 3)
+        print(e)
+        print(e.query)
+        print(type(e))"""
+
+        #Example of related_query_name
+        """d = District.objects.filter(Q(tag__name="Mohammadpur") | Q(tag__name="Gulshan")).distinct()
+        #SELECT "EmpInfo_district"."id", "EmpInfo_district"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE "EmpInfo_thana"."name" = Mohammadpur
+        #d = District.objects.filter(tag__name="Mohammadpur")
+        #SELECT DISTINCT "EmpInfo_district"."id", "EmpInfo_district"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE ("EmpInfo_thana"."name" = Mohammadpur OR "EmpInfo_thana"."name" = Gulshan)
+        print(d.query)
+        print(d)"""
+  
+
         serializer=DistrictSerializer(district)
         return Response(serializer.data)
     
@@ -82,6 +106,7 @@ class Thanas(APIView):
 
     def get(self, request, pk):
         thana=self.get_object(pk)
+
         serializer=ThanaSerializer(thana)
         return Response(serializer.data)
     

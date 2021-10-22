@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import DistrictList, Districts, ThanaList, Thanas, Designations, DesignationList, DepartmenttList, \
-    EmpList, EmpListDetail, EmpSalaryList, EmpEducationList, EmpBasicInfoSalaryEducation
+    EmpList, EmpListDetail, EmpSalaryList, EmpEducationList, EmpBasicInfoSalaryEducation, EmpBasicInfoDetailSerialiser
 
 urlpatterns = [
     path('districtlist/', DistrictList.as_view()),

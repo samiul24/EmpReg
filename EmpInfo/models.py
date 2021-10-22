@@ -1,5 +1,7 @@
 from django.db import models
+from django.db.models.fields import CharField
 from django.utils.safestring import SafeData, SafeString, mark_safe
+
 
 # Create your models here.
 class District(models.Model):
@@ -9,7 +11,7 @@ class District(models.Model):
         return self.name
 
 class Thana(models.Model):
-    district=models.ForeignKey(District, related_name='district', on_delete=models.CASCADE)
+    district=models.ForeignKey(District, related_name='district', related_query_name='tag', on_delete=models.CASCADE)
     name=models.CharField(max_length=25, blank=False)
     
     def __str__(self):
