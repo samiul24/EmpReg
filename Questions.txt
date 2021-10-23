@@ -1,3 +1,3 @@
-
+1) Whole Application a DateTime Same formate a follow ki vabe korbo?
 2) Admin a Employee er sob data that menas [ EmpBasicInfo+EmpSalary+EmpEducation ] single view a dekbo
 3) speific kono akta dept er employee er details info dekbo, jader salary > 50000 and education degree HSC or SCC

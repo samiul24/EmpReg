@@ -1,5 +1,6 @@
 from django.contrib import admin
-from EmpInfo.models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
+from EmpInfo.models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, \
+     EmpEducation, Student, Card
 
 # Register your models here.
 class DistrictAdmin(admin.ModelAdmin):
@@ -37,6 +38,12 @@ class EmpSalaryAdmin(admin.ModelAdmin):
 class EmpEducationAdmin(admin.ModelAdmin):
     list_display=['employee', 'degree', 'institute', 'passingyear', 'result']
 
+class StudentAdmin(admin.ModelAdmin):
+    list_display=['year_in_school', 'is_upperclass']
+
+class CardAdmin(admin.ModelAdmin):
+    list_display=['suit']
+
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Thana, ThanaAdmin)
 admin.site.register(Department, DepartmentAdmin)
@@ -44,3 +51,5 @@ admin.site.register(Designation, DesignationAdmin)
 admin.site.register(EmpBasicInfo, EmpBasicInfoAdmin)
 admin.site.register(EmpSalary, EmpSalaryAdmin)
 admin.site.register(EmpEducation, EmpEducationAdmin)
+admin.site.register(Student, StudentAdmin)
+admin.site.register(Card, CardAdmin)
