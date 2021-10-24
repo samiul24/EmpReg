@@ -52,11 +52,19 @@ class Districts(APIView):
         #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE "EmpInfo_thana"."district_id" = 1
         #e = d.district.filter(id=3)
         #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_thana"."id" = 3)
-        #e = d.district.filter(id=3, district__name='Dhaka')
+        #e = d.district.filter(id=3, district__name='Dhaka').value
         #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" INNER JOIN "EmpInfo_district" ON ("EmpInfo_thana"."district_id" = "EmpInfo_district"."id") WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_district"."name" = Dhaka AND "EmpInfo_thana"."id" = 3)
         print(e)
         print(e.query)
-        print(type(e))"""
+        print(type(e))
+        
+        d = District.objects.get(id=4)
+        e = d.district.filter(id=3, district__name='Dhaka').values('id', 'name', 'district__name','district')
+        SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."name", "EmpInfo_district"."name", "EmpInfo_thana"."district_id" FROM "EmpInfo_thana" INNER JOIN "EmpInfo_district" ON ("EmpInfo_thana"."district_id" = "EmpInfo_district"."id") WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_district"."name" = Dhaka AND "EmpInfo_thana"."id" = 3)
+        print(e)
+        print(e.query)
+        print(type(e))
+        """
 
         #Example of related_query_name
         """d = District.objects.filter(Q(tag__name="Mohammadpur") | Q(tag__name="Gulshan")).distinct()
@@ -64,7 +72,14 @@ class Districts(APIView):
         #d = District.objects.filter(tag__name="Mohammadpur")
         #SELECT DISTINCT "EmpInfo_district"."id", "EmpInfo_district"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE ("EmpInfo_thana"."name" = Mohammadpur OR "EmpInfo_thana"."name" = Gulshan)
         print(d.query)
-        print(d)"""
+        print(d)
+        
+        
+        d = District.objects.filter(Q(tag__name="Mohammadpur") | Q(tag__name="Gulshan")).values('id', 'name', 'tag__name')
+        SELECT "EmpInfo_district"."id", "EmpInfo_district"."name", "EmpInfo_thana"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE ("EmpInfo_thana"."name" = Mohammadpur OR "EmpInfo_thana"."name" = Gulshan)
+        print(d.query)
+        print(d)
+        """
   
 
         serializer=DistrictSerializer(district)
