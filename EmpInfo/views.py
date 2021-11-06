@@ -9,7 +9,7 @@ from django.db.models.functions import Length
 from django.db.models import CharField, Count
 CharField.register_lookup(Length)
 
-from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation
+from .models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, EmpEducation, Blog, Author, Entry
 from .serializers import DistrictSerializer, ThanaSerializer, DepartmentSerializer, DesignationSerializer, \
                         EmpBasicInfoSerialiser, EmpBasicInfoDetailSerialiser, EmpSalarySerializer, EmpEducationSerializer, \
                         EmpBasicInfoSalaryEducationSerialiser
@@ -43,44 +43,15 @@ class Districts(APIView):
 
     def get(self, request, pk):
         district=self.get_object(pk)
-
-        #Example of related_name
-        """d = District.objects.get(id=4)
-        print(d)
-        print(type(d))
-        #e = d.district.all()
-        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE "EmpInfo_thana"."district_id" = 1
-        #e = d.district.filter(id=3)
-        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_thana"."id" = 3)
-        #e = d.district.filter(id=3, district__name='Dhaka').value
-        #SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."district_id", "EmpInfo_thana"."name" FROM "EmpInfo_thana" INNER JOIN "EmpInfo_district" ON ("EmpInfo_thana"."district_id" = "EmpInfo_district"."id") WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_district"."name" = Dhaka AND "EmpInfo_thana"."id" = 3)
+        #d = Blog.objects.get(id=1)
+        #print(d)
+        e = Blog.objects.exclude(
+    entry__headline__contains='Lennon',
+    entry__pub_date__year=2008,
+)
         print(e)
         print(e.query)
-        print(type(e))
-        
-        d = District.objects.get(id=4)
-        e = d.district.filter(id=3, district__name='Dhaka').values('id', 'name', 'district__name','district')
-        SELECT "EmpInfo_thana"."id", "EmpInfo_thana"."name", "EmpInfo_district"."name", "EmpInfo_thana"."district_id" FROM "EmpInfo_thana" INNER JOIN "EmpInfo_district" ON ("EmpInfo_thana"."district_id" = "EmpInfo_district"."id") WHERE ("EmpInfo_thana"."district_id" = 4 AND "EmpInfo_district"."name" = Dhaka AND "EmpInfo_thana"."id" = 3)
-        print(e)
-        print(e.query)
-        print(type(e))
-        """
 
-        #Example of related_query_name
-        """d = District.objects.filter(Q(tag__name="Mohammadpur") | Q(tag__name="Gulshan")).distinct()
-        #SELECT "EmpInfo_district"."id", "EmpInfo_district"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE "EmpInfo_thana"."name" = Mohammadpur
-        #d = District.objects.filter(tag__name="Mohammadpur")
-        #SELECT DISTINCT "EmpInfo_district"."id", "EmpInfo_district"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE ("EmpInfo_thana"."name" = Mohammadpur OR "EmpInfo_thana"."name" = Gulshan)
-        print(d.query)
-        print(d)
-        
-        
-        d = District.objects.filter(Q(tag__name="Mohammadpur") | Q(tag__name="Gulshan")).values('id', 'name', 'tag__name')
-        SELECT "EmpInfo_district"."id", "EmpInfo_district"."name", "EmpInfo_thana"."name" FROM "EmpInfo_district" INNER JOIN "EmpInfo_thana" ON ("EmpInfo_district"."id" = "EmpInfo_thana"."district_id") WHERE ("EmpInfo_thana"."name" = Mohammadpur OR "EmpInfo_thana"."name" = Gulshan)
-        print(d.query)
-        print(d)
-        """
-  
 
         serializer=DistrictSerializer(district)
         return Response(serializer.data)

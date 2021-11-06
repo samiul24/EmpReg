@@ -1,6 +1,7 @@
 from django.contrib import admin
+from django.contrib.admin.options import ModelAdmin
 from EmpInfo.models import District, Thana, Department, Designation, EmpBasicInfo, EmpSalary, \
-     EmpEducation, Student, Card
+     EmpEducation, Student, Card, Blog, Author, Entry
 
 # Register your models here.
 class DistrictAdmin(admin.ModelAdmin):
@@ -44,6 +45,15 @@ class StudentAdmin(admin.ModelAdmin):
 class CardAdmin(admin.ModelAdmin):
     list_display=['suit']
 
+"""class BlogAdmin(admin,ModelAdmin):
+    list_display=['name']
+
+class AuthorAdmin(admin,ModelAdmin):
+    list_display=['name']
+
+class EntryAdmin(admin,ModelAdmin):
+    list_display=['headline']"""
+
 admin.site.register(District, DistrictAdmin)
 admin.site.register(Thana, ThanaAdmin)
 admin.site.register(Department, DepartmentAdmin)
@@ -53,3 +63,6 @@ admin.site.register(EmpSalary, EmpSalaryAdmin)
 admin.site.register(EmpEducation, EmpEducationAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Card, CardAdmin)
+"""admin.site.register(Blog, BlogAdmin)
+admin.site.register(Author, AuthorAdmin)
+admin.site.register(Entry, EntryAdmin)"""

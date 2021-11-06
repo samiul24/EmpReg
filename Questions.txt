@@ -1,3 +1,141 @@
 1) Whole Application a DateTime Same formate a follow ki vabe korbo?
 2) Admin a Employee er sob data that menas [ EmpBasicInfo+EmpSalary+EmpEducation ] single view a dekbo
 3) speific kono akta dept er employee er details info dekbo, jader salary > 50000 and education degree HSC or SCC
+
+
+Entry.objects.filter(pub_date__lte='2006-01-01')
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" 
+FROM "EmpInfo_entry" WHERE "EmpInfo_entry"."pub_date" <= 2006-01-01
+
+#############################
+
+Blog.objects.exclude(
+    entry__headline__contains='Lennon',
+    entry__pub_date__year=2008,
+
+SELECT "EmpInfo_blog"."id", "EmpInfo_blog"."name", "EmpInfo_blog"."tagline" 
+FROM "EmpInfo_blog" WHERE NOT (EXISTS(SELECT (1) AS "a" FROM "EmpInfo_entry" U1 
+WHERE (U1."headline" LIKE %Lennon% ESCAPE '\' AND U1."blog_id" = "EmpInfo_blog"."id") LIMIT 1) 
+AND EXISTS(SELECT (1) AS "a" FROM "EmpInfo_entry" U1 WHERE (U1."pub_date" 
+BETWEEN 2008-01-01 AND 2008-12-31 AND U1."blog_id" = "EmpInfo_blog"."id") LIMIT 1))
+
+#############################
+
+Blog.objects.exclude(
+    entry__in=Entry.objects.filter(
+        headline__contains='Lennon',
+        pub_date__year=2008,
+    ),
+)
+
+SELECT "EmpInfo_blog"."id", "EmpInfo_blog"."name", "EmpInfo_blog"."tagline" 
+FROM "EmpInfo_blog" WHERE NOT (EXISTS(SELECT (1) AS "a" FROM "EmpInfo_entry" V1 
+WHERE (V1."id" IN (SELECT U0."id" FROM "EmpInfo_entry" U0 WHERE (U0."headline" LIKE %Lennon% ESCAPE '\' AND U0."pub_date" 
+BETWEEN 2008-01-01 AND 2008-12-31)) AND V1."blog_id" = "EmpInfo_blog"."id") LIMIT 1))
+
+################################
+
+Entry.objects.filter(headline__exact="Cat bites dog")
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE "EmpInfo_entry"."headline" = Cat bites dog
+
+##############################
+
+Entry.objects.filter(blog__name='Beatles Blog')
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", "EmpInfo_entry"."pub_date", 
+"EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", "EmpInfo_entry"."number_of_pingbacks", 
+"EmpInfo_entry"."rating" FROM "EmpInfo_entry" INNER JOIN "EmpInfo_blog" ON ("EmpInfo_entry"."blog_id" = "EmpInfo_blog"."id") 
+WHERE "EmpInfo_blog"."name" = Beatles Blog
+
+###############################
+
+Entry.objects.filter(blog__name='Beatles Blog').values('id','headline', 'blog__name')
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."headline", "EmpInfo_blog"."name" 
+FROM "EmpInfo_entry" INNER JOIN "EmpInfo_blog" ON ("EmpInfo_entry"."blog_id" = "EmpInfo_blog"."id") 
+WHERE "EmpInfo_blog"."name" = Beatles Blog
+
+###############################
+
+Entry.objects.filter(number_of_comments__gt=F('number_of_pingbacks'))
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE "EmpInfo_entry"."number_of_comments" > "EmpInfo_entry"."number_of_pingbacks"
+
+
+Entry.objects.filter(number_of_comments__gt=F('number_of_pingbacks')*2)
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE "EmpInfo_entry"."number_of_comments" > ("EmpInfo_entry"."number_of_pingbacks" * 2)
+
+
+Entry.objects.filter(rating__lt=F('number_of_comments') + F('number_of_pingbacks'))
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", "EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE "EmpInfo_entry"."rating" < ("EmpInfo_entry"."number_of_comments" + "EmpInfo_entry"."number_of_pingbacks")
+
+
+Entry.objects.filter(authors__name=F('blog__name'))
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" 
+FROM "EmpInfo_entry" INNER JOIN "EmpInfo_blog" ON ("EmpInfo_entry"."blog_id" = "EmpInfo_blog"."id") 
+INNER JOIN "EmpInfo_entry_authors" ON ("EmpInfo_entry"."id" = "EmpInfo_entry_authors"."entry_id") 
+INNER JOIN "EmpInfo_author" ON ("EmpInfo_entry_authors"."author_id" = "EmpInfo_author"."id") 
+WHERE "EmpInfo_author"."name" = "EmpInfo_blog"."name"
+
+
+Entry.objects.filter(mod_date__gt=F('pub_date') + timedelta(days=3))
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", 
+"EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE "EmpInfo_entry"."mod_date" > (django_format_dtdelta('+', "EmpInfo_entry"."pub_date", 259200000000))
+
+
+Entry.objects.filter(pub_date__year=F('mod_date__year'))
+
+SELECT "EmpInfo_entry"."id", "EmpInfo_entry"."blog_id", "EmpInfo_entry"."headline", "EmpInfo_entry"."body_text", 
+"EmpInfo_entry"."pub_date", "EmpInfo_entry"."mod_date", "EmpInfo_entry"."number_of_comments", "EmpInfo_entry"."number_of_pingbacks", "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE django_date_extract('year', "EmpInfo_entry"."pub_date") = django_date_extract('year', "EmpInfo_entry"."mod_date")
+
+
+Entry.objects.filter(
+            pub_date__year=F('pub_date__year'),
+       ).order_by('-rating').values('rating')[:1]
+
+SELECT "EmpInfo_entry"."rating" FROM "EmpInfo_entry" 
+WHERE django_date_extract('year', "EmpInfo_entry"."pub_date") = django_date_extract('year', "EmpInfo_entry"."pub_date") 
+ORDER BY "EmpInfo_entry"."rating" DESC LIMIT 1
+
+
+Entry.objects.values('pub_date__year').annotate(
+...     top_rating=Subquery(
+...         Entry.objects.filter(
+...             pub_date__year=OuterRef('pub_date__year'),
+...         ).order_by('-rating').values('rating')[:1]
+...     ),
+...     total_comments=Sum('number_of_comments'),
+... )
+
+SELECT django_date_extract('year', "EmpInfo_entry"."pub_date"), 
+(SELECT U0."rating" FROM "EmpInfo_entry" U0 
+WHERE django_date_extract('year', U0."pub_date") = django_date_extract('year', "EmpInfo_entry"."pub_date") 
+ORDER BY U0."rating" DESC LIMIT 1) AS "top_rating", SUM("EmpInfo_entry"."number_of_comments") AS "total_comments" 
+FROM "EmpInfo_entry" 
+GROUP BY django_date_extract('year', "EmpInfo_entry"."pub_date"), "top_rating"
+
+################################
